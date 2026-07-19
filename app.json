@@ -1,25 +1,30 @@
 {
   "expo": {
-    "name": "CatWhisper",
+    "name": "Meowchi",
     "slug": "CatWhisper",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "scheme": "meowchi",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FBC4D1",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FBC4D1"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Meowchi needs the microphone to record your cat's sounds and guess their mood."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#FBC4D1"
+      },
+      "permissions": ["RECORD_AUDIO"]
     },
     "web": {
       "bundler": "metro",
@@ -27,7 +32,13 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Meowchi needs the microphone to record your cat's sounds and guess their mood."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

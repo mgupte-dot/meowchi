@@ -1,35 +1,54 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import React from 'react';
 
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { Fonts, Theme } from '@/constants/theme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
+        tabBarActiveTintColor: Theme.primaryDark,
+        tabBarInactiveTintColor: Theme.textSecondary,
+        tabBarStyle: {
+          backgroundColor: Theme.surface,
+          borderTopColor: Theme.border,
+          height: 84,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontFamily: Fonts.bodyBold,
+          fontSize: 11,
+        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+          tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="listen"
+        options={{
+          title: 'Listen',
+          tabBarIcon: ({ color, size }) => <Ionicons name="mic" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="call"
+        options={{
+          title: 'Call Kitty',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="paw" color={color} size={size} />
           ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="journal"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
-          ),
+          title: 'Journal',
+          tabBarIcon: ({ color, size }) => <Ionicons name="book" color={color} size={size} />,
         }}
       />
     </Tabs>

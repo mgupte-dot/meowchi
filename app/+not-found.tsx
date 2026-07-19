@@ -1,19 +1,24 @@
 import { Link, Stack } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { GradientBackground } from '@/components/kawaii/GradientBackground';
+import { PawButton } from '@/components/kawaii/PawButton';
+import { PixelIcon } from '@/components/kawaii/PixelIcon';
+import { Fonts, Spacing, Theme } from '@/constants/theme';
 
 export default function NotFoundScreen() {
   return (
     <>
       <Stack.Screen options={{ title: 'Oops!' }} />
-      <ThemedView style={styles.container}>
-        <ThemedText type="title">This screen doesn't exist.</ThemedText>
-        <Link href="/" style={styles.link}>
-          <ThemedText type="link">Go to home screen!</ThemedText>
-        </Link>
-      </ThemedView>
+      <GradientBackground>
+        <View style={styles.container}>
+          <PixelIcon name="alert" size={64} />
+          <Text style={styles.title}>This screen wandered off like a cat.</Text>
+          <Link href="/" asChild>
+            <PawButton>Back home</PawButton>
+          </Link>
+        </View>
+      </GradientBackground>
     </>
   );
 }
@@ -23,10 +28,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: Spacing.xl,
+    gap: Spacing.lg,
   },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
+  title: {
+    fontFamily: Fonts.heading,
+    fontSize: 18,
+    color: Theme.textPrimary,
+    textAlign: 'center',
   },
 });
