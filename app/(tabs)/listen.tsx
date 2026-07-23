@@ -1,5 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
+import {
+  AudioPlayer,
+  createAudioPlayer,
+  RecordingPresets,
+  requestRecordingPermissionsAsync,
+  setAudioModeAsync,
+  useAudioRecorder,
+  useAudioRecorderState,
+} from 'expo-audio';
 import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -25,17 +33,20 @@ import { persistRecording } from '@/lib/recordingStorage';
 
 type Stage = 'idle' | 'recording' | 'analyzing' | 'result' | 'permission-denied';
 
+const RECORDER_OPTIONS = { ...RecordingPresets.HIGH_QUALITY, isMeteringEnabled: true };
+
 export default function ListenScreen() {
   const [stage, setStage] = useState<Stage>('idle');
   const [elapsedMs, setElapsedMs] = useState(0);
   const [mood, setMood] = useState<MoodResult | null>(null);
   const [recordingUri, setRecordingUri] = useState<string | null>(null);
 
-  const recordingRef = useRef<Audio.Recording | null>(null);
+  const recorder = useAudioRecorder(RECORDER_OPTIONS);
+  const recorderState = useAudioRecorderState(recorder, 100);
   const samplesRef = useRef<MeterSample[]>([]);
   const startedAtRef = useRef(0);
   const pulse = useRef(new Animated.Value(1)).current;
-  const playbackRef = useRef<Audio.Sound | null>(null);
+  const playbackRef = useRef<AudioPlayer | null>(null);
 
   useEffect(() => {
     if (stage === 'recording') {
@@ -62,28 +73,30 @@ export default function ListenScreen() {
   }, [stage, pulse]);
 
   useEffect(() => {
+    if (stage !== 'recording' || !recorderState.isRecording) return;
+    samplesRef.current.push({
+      atMs: recorderState.durationMillis,
+      db: recorderState.metering ?? -60,
+    });
+    setElapsedMs(recorderState.durationMillis);
+  }, [stage, recorderState]);
+
+  useEffect(() => {
     return () => {
-      recordingRef.current?.stopAndUnloadAsync().catch(() => {});
-      playbackRef.current?.unloadAsync().catch(() => {});
+      playbackRef.current?.remove();
     };
   }, []);
 
   async function startRecording() {
-    const permission = await Audio.requestPermissionsAsync();
+    const permission = await requestRecordingPermissionsAsync();
     if (!permission.granted) {
       setStage('permission-denied');
       return;
     }
 
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: true,
-      playsInSilentModeIOS: true,
-    });
-
-    const recording = new Audio.Recording();
-    await recording.prepareToRecordAsync({
-      ...Audio.RecordingOptionsPresets.HIGH_QUALITY,
-      isMeteringEnabled: true,
+    await setAudioModeAsync({
+      allowsRecording: true,
+      playsInSilentMode: true,
     });
 
     samplesRef.current = [];
@@ -92,27 +105,16 @@ export default function ListenScreen() {
     setMood(null);
     setRecordingUri(null);
 
-    recording.setOnRecordingStatusUpdate((status) => {
-      if (!status.isRecording) return;
-      const atMs = Date.now() - startedAtRef.current;
-      samplesRef.current.push({ atMs, db: status.metering ?? -60 });
-      setElapsedMs(atMs);
-    });
-    recording.setProgressUpdateInterval(100);
-
-    await recording.startAsync();
-    recordingRef.current = recording;
+    await recorder.prepareToRecordAsync();
+    recorder.record();
     setStage('recording');
   }
 
   async function stopRecording() {
-    const recording = recordingRef.current;
-    if (!recording) return;
     setStage('analyzing');
 
-    await recording.stopAndUnloadAsync();
-    const tempUri = recording.getURI();
-    recordingRef.current = null;
+    await recorder.stop();
+    const tempUri = recorder.uri;
 
     const durationMs = Date.now() - startedAtRef.current;
     const result = analyzeMood(samplesRef.current, durationMs);
@@ -134,12 +136,12 @@ export default function ListenScreen() {
     }, 650);
   }
 
-  async function playRecording() {
+  function playRecording() {
     if (!recordingUri) return;
-    await playbackRef.current?.unloadAsync().catch(() => {});
-    const { sound } = await Audio.Sound.createAsync({ uri: recordingUri });
-    playbackRef.current = sound;
-    await sound.playAsync();
+    playbackRef.current?.remove();
+    const player = createAudioPlayer(recordingUri);
+    playbackRef.current = player;
+    player.play();
   }
 
   function reset() {

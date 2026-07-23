@@ -1,4 +1,4 @@
-import { Audio } from 'expo-av';
+import { AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -12,30 +12,31 @@ import { SOUND_PRESETS } from '@/lib/callSounds';
 
 export default function CallKittyScreen() {
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const playerRef = useRef<AudioPlayer | null>(null);
 
   useEffect(() => {
-    Audio.setAudioModeAsync({ playsInSilentModeIOS: true }).catch(() => {});
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
     return () => {
-      soundRef.current?.unloadAsync().catch(() => {});
+      playerRef.current?.remove();
     };
   }, []);
 
-  async function playPreset(id: string) {
+  function playPreset(id: string) {
     const preset = SOUND_PRESETS.find((p) => p.id === id);
     if (!preset) return;
 
-    await soundRef.current?.unloadAsync().catch(() => {});
+    playerRef.current?.remove();
     setPlayingId(id);
 
-    const { sound } = await Audio.Sound.createAsync(preset.source);
-    soundRef.current = sound;
-    sound.setOnPlaybackStatusUpdate((status) => {
-      if (status.isLoaded && status.didJustFinish) {
+    const player = createAudioPlayer(preset.source);
+    playerRef.current = player;
+    const subscription = player.addListener('playbackStatusUpdate', (status) => {
+      if (status.didJustFinish) {
         setPlayingId((current) => (current === id ? null : current));
+        subscription.remove();
       }
     });
-    await sound.playAsync();
+    player.play();
   }
 
   return (

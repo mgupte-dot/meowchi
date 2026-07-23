@@ -8,11 +8,6 @@
     "scheme": "meowchi",
     "userInterfaceStyle": "light",
     "backgroundColor": "#FBC4D1",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FBC4D1"
-    },
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -24,7 +19,9 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#FBC4D1"
       },
-      "permissions": ["RECORD_AUDIO"]
+      "permissions": [
+        "RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -34,11 +31,20 @@
     "plugins": [
       "expo-router",
       [
-        "expo-av",
+        "expo-audio",
         {
           "microphonePermission": "Meowchi needs the microphone to record your cat's sounds and guess their mood."
         }
-      ]
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FBC4D1"
+        }
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

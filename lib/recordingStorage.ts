@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 // Recordings start out in expo-av's temp cache, which iOS/Android can clear
 // under storage pressure. Journal entries need to survive across app

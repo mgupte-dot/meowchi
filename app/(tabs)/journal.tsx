@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
+import { AudioPlayer, createAudioPlayer } from 'expo-audio';
 import { useFocusEffect } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useCallback, useRef, useState } from 'react';
@@ -46,7 +46,7 @@ export default function JournalScreen() {
 
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const playerRef = useRef<AudioPlayer | null>(null);
 
   const [noteEntryId, setNoteEntryId] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState('');
@@ -63,39 +63,40 @@ export default function JournalScreen() {
       loadJournal().then(setEntries);
       loadFolders().then(setFolders);
       return () => {
-        soundRef.current?.unloadAsync().catch(() => {});
+        playerRef.current?.remove();
         setPlayingId(null);
         setIsPaused(false);
       };
     }, []),
   );
 
-  async function togglePlay(entry: JournalEntry) {
+  function togglePlay(entry: JournalEntry) {
     if (!entry.recordingUri) return;
 
     if (playingId === entry.id) {
       if (isPaused) {
-        await soundRef.current?.playAsync();
+        playerRef.current?.play();
         setIsPaused(false);
       } else {
-        await soundRef.current?.pauseAsync();
+        playerRef.current?.pause();
         setIsPaused(true);
       }
       return;
     }
 
-    await soundRef.current?.unloadAsync().catch(() => {});
-    const { sound } = await Audio.Sound.createAsync({ uri: entry.recordingUri });
-    soundRef.current = sound;
+    playerRef.current?.remove();
+    const player = createAudioPlayer(entry.recordingUri);
+    playerRef.current = player;
     setPlayingId(entry.id);
     setIsPaused(false);
-    sound.setOnPlaybackStatusUpdate((status) => {
-      if (status.isLoaded && status.didJustFinish) {
+    const subscription = player.addListener('playbackStatusUpdate', (status) => {
+      if (status.didJustFinish) {
         setPlayingId(null);
         setIsPaused(false);
+        subscription.remove();
       }
     });
-    await sound.playAsync();
+    player.play();
   }
 
   async function shareEntry(uri?: string) {
@@ -110,7 +111,7 @@ export default function JournalScreen() {
 
   async function removeEntry(id: string) {
     if (playingId === id) {
-      await soundRef.current?.unloadAsync().catch(() => {});
+      playerRef.current?.remove();
       setPlayingId(null);
       setIsPaused(false);
     }
