@@ -1,5 +1,17 @@
 {
   "enabledPlugins": {
     "expo@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_screenshot",
+      "mcp__Claude_Preview__preview_console_logs",
+      "Bash(npx tsc --noEmit*)",
+      "mcp__Claude_Preview__preview_logs",
+      "Bash(ipconfig getifaddr *)",
+      "Bash(npx expo-doctor*)",
+      "mcp__Claude_Preview__preview_snapshot",
+      "mcp__Claude_Preview__preview_inspect"
+    ]
   }
 }
