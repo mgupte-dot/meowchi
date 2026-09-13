@@ -1,50 +1,56 @@
-# Welcome to your Expo app 👋
+# Meowchi 🐾
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A kawaii-themed iOS app that helps cat owners understand their cat's meows and call/soothe
+their cat with real cat sounds.
 
-## Get started
+For the full project summary, architecture, roadmap, and market research, see
+[`docs/Meowchi_Project_Report.docx`](docs/Meowchi_Project_Report.docx).
 
-1. Install dependencies
+## What it does
 
-   ```bash
-   npm install
-   ```
+- **Listen** — record a meow and get a heuristic "mood translation" (e.g. Quick Chirp, Long Yowl,
+  Soft Chatter) based on the recording's volume, duration, and pattern.
+- **Call Kitty** — play real, CC0-licensed cat vocalizations (Come Here!, Cuddle Time, Playtime!,
+  Sweet Greeting) to attract, soothe, or engage a cat.
+- **Meow Journal** — every recording is saved with play/pause controls, free-text notes, and
+  custom folders, so you can track a cat's vocal patterns over time.
 
-2. Start the app
+Everything currently runs entirely on-device — no backend, no accounts, no cloud sync.
 
-   ```bash
-    npx expo start
-   ```
+## Tech stack
 
-In the output, you'll find options to open the app in a
+- React Native (0.86) + Expo SDK 57, TypeScript
+- Expo Router (file-based navigation)
+- `expo-audio` for recording/playback, `expo-file-system` for persistent local storage
+- `@react-native-async-storage/async-storage` for journal/folder data
+- A custom "kawaii" pixel-art design system (see `components/kawaii/`)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Getting started
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Scan the QR code with the **Expo Go** app on your iPhone (same Wi-Fi network as your computer),
+or press `w` to run it in a browser for quick UI checks (note: some pixel-art image rendering is
+currently broken in the web preview — this is a known `react-native-web` issue, not a bug in the
+app itself; native iOS via Expo Go is the real target).
 
-## Learn more
+## Project structure
 
-To learn more about developing your project with Expo, look at the following resources:
+| Path | What's there |
+|---|---|
+| `app/(tabs)/*.tsx` | The four main screens: Home, Listen, Call Kitty, Journal |
+| `lib/moodAnalyzer.ts` | Heuristic feature extraction + mood scoring |
+| `lib/callSounds.ts` | Bundled Call Kitty sound metadata |
+| `lib/journalStorage.ts` | AsyncStorage CRUD for journal entries and folders |
+| `lib/recordingStorage.ts` | Persists recordings to the app's private Documents directory |
+| `components/kawaii/*` | Design-system components: cards, buttons, pixel icons, modals |
+| `assets/sounds/` | CC0 cat sound clips (see `ATTRIBUTIONS.md` there for sources) |
+| `docs/` | Project report for collaborators |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Status
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+In active development, tested via Expo Go on iOS. Not yet built for TestFlight/App Store — see
+`docs/Meowchi_Project_Report.docx` for the roadmap and current priorities.
