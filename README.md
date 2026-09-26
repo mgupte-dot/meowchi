@@ -1,10 +1,10 @@
 # Meowchi 🐾
 
-A kawaii-themed iOS app that helps cat owners understand their cat's meows and call/soothe
+iOS app that helps cat owners understand their cat's meows and call/soothe
 their cat with real cat sounds.
 
 For the full project summary, architecture, roadmap, and market research, see
-[`docs/Meowchi_Project_Report.docx`](docs/Meowchi_Project_Report.docx).
+[`docs/Meowchi_Project_Report.docx`](https://docs.google.com/document/d/1-vrSeJ4RDdjyNLAwkA1THJPVl2R7QjJ3eZ4-GLkVpw4/edit?usp=sharing).
 
 ## What it does
 
