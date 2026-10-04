@@ -1,5 +1,6 @@
 import { AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { GradientBackground } from '@/components/kawaii/GradientBackground';
@@ -7,11 +8,19 @@ import { KawaiiCard } from '@/components/kawaii/KawaiiCard';
 import { PixelBars } from '@/components/kawaii/PixelBars';
 import { PixelIcon } from '@/components/kawaii/PixelIcon';
 import { ScreenHeader } from '@/components/kawaii/ScreenHeader';
+import { CatCamePrompt } from '@/components/research/CatCamePrompt';
+import { ResponseRateCard } from '@/components/research/ResponseRateCard';
 import { Fonts, Radii, Shadow, Spacing, Theme } from '@/constants/theme';
 import { SOUND_PRESETS } from '@/lib/callSounds';
+import { CallResponse, addCallResponse, loadCallResponses } from '@/lib/research/callResponses';
+import { enqueueIfConsented, flushQueue } from '@/lib/research/uploadQueue';
+
+type PendingPrompt = { soundId: string; label: string; playedAt: number };
 
 export default function CallKittyScreen() {
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [responses, setResponses] = useState<CallResponse[]>([]);
+  const [prompt, setPrompt] = useState<PendingPrompt | null>(null);
   const playerRef = useRef<AudioPlayer | null>(null);
 
   useEffect(() => {
@@ -20,6 +29,12 @@ export default function CallKittyScreen() {
       playerRef.current?.remove();
     };
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCallResponses().then(setResponses);
+    }, []),
+  );
 
   function playPreset(id: string) {
     const preset = SOUND_PRESETS.find((p) => p.id === id);
@@ -33,10 +48,24 @@ export default function CallKittyScreen() {
     const subscription = player.addListener('playbackStatusUpdate', (status) => {
       if (status.didJustFinish) {
         setPlayingId((current) => (current === id ? null : current));
+        setPrompt({ soundId: preset.id, label: preset.label, playedAt: Date.now() });
         subscription.remove();
       }
     });
     player.play();
+  }
+
+  async function answerPrompt(cameToYou: boolean) {
+    if (!prompt) return;
+    setPrompt(null);
+    const response = await addCallResponse({
+      soundId: prompt.soundId,
+      playedAt: prompt.playedAt,
+      cameToYou,
+    });
+    setResponses((current) => [response, ...current]);
+    await enqueueIfConsented('call_response', response.id);
+    flushQueue();
   }
 
   return (
@@ -89,7 +118,16 @@ export default function CallKittyScreen() {
             "Sweet Greeting" to grab attention, then switch to "Cuddle Time" once they're near.
           </Text>
         </KawaiiCard>
+
+        <ResponseRateCard responses={responses} />
       </ScrollView>
+
+      <CatCamePrompt
+        visible={prompt !== null}
+        soundLabel={prompt?.label ?? ''}
+        onAnswer={answerPrompt}
+        onDismiss={() => setPrompt(null)}
+      />
     </GradientBackground>
   );
 }
