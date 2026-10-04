@@ -30,6 +30,7 @@ import { Fonts, Radii, Shadow, Spacing, Theme } from '@/constants/theme';
 import { addJournalEntry } from '@/lib/journalStorage';
 import { analyzeMood, MeterSample, MoodResult } from '@/lib/moodAnalyzer';
 import { persistRecording } from '@/lib/recordingStorage';
+import { enqueueIfConsented, flushQueue } from '@/lib/research/uploadQueue';
 
 type Stage = 'idle' | 'recording' | 'analyzing' | 'result' | 'permission-denied';
 
@@ -133,6 +134,8 @@ export default function ListenScreen() {
         durationMs,
         folderId: null,
       });
+      await enqueueIfConsented('recording', id);
+      flushQueue();
     }, 650);
   }
 

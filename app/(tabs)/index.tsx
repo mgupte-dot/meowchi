@@ -6,6 +6,7 @@ import { KawaiiCard } from '@/components/kawaii/KawaiiCard';
 import { PawButton } from '@/components/kawaii/PawButton';
 import { PixelIcon } from '@/components/kawaii/PixelIcon';
 import { ScreenHeader } from '@/components/kawaii/ScreenHeader';
+import { ResearchConsentCard } from '@/components/research/ResearchConsentCard';
 import { Fonts, Spacing, Theme } from '@/constants/theme';
 
 export default function HomeScreen() {
@@ -44,6 +45,8 @@ export default function HomeScreen() {
             Call Kitty
           </PawButton>
         </KawaiiCard>
+
+        <ResearchConsentCard />
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
